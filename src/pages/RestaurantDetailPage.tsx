@@ -16,12 +16,16 @@ import Header from "../components/header";
 import { Link, useParams } from 'react-router-dom';
 import { Tooltip } from '../components/ui/tooltip';
 import { BOOKING_HOURS } from '../models/reataurant_repository';
+import { format } from "date-fns";
+
+
 
 export default function RestaurantDetailPage() {
   const [user, setUser] = useState<any>(null);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [tables, setTables] = useState<any[]>([]);
+  const [dateSelected, setDateSelected] = useState<Date>(new Date());
 
   const { id } = useParams<{ id: string }>();
 
@@ -31,21 +35,29 @@ export default function RestaurantDetailPage() {
       setUser(usuario);
     };
     fetchUser();
+  }, []);
 
+  useEffect(() => {
     const fetchRestaurant = async () => {
+      if (!id) {
+        return;
+      }
       const restaurant = await restaurant_repository.getById(parseInt(id));
       setRestaurant(restaurant);
     };
     fetchRestaurant();
+  }, []);
 
+  useEffect(() => {
     const fetchBookings = async () => {
-      const response = await restaurant_repository.getTodayBookings();
+      const response = await restaurant_repository.getBookingsByDate(format(dateSelected, "yyyy-MM-dd"));
       setBookings(Array.isArray(response.bookings) ? response.bookings : []);
       console.log("Reservas cargadas:", response.bookings);
     };
     fetchBookings();
+  }, [dateSelected]);
 
-
+  useEffect(() => {
     const fetchTables = async () => {
       const tables = await restaurant_repository.getAllTables();
       setTables(Array.isArray(tables) ? tables : []);
@@ -98,8 +110,8 @@ export default function RestaurantDetailPage() {
               <Text>Cargando...</Text>
             )}
           </Box>
-          <Box 
-            flex="1" 
+          <Box
+            flex="1"
             borderWidth="1px"
             borderRadius="lg"
             p={6}
@@ -112,33 +124,39 @@ export default function RestaurantDetailPage() {
             <Image
               src="/restaurant_inside.jpeg"
               alt="Restaurant's picture"
-              style={{ height: "100%", maxHeight: "180px", borderRadius: "12px", objectFit: "cover" }}
+              style={{ height: "100%", maxHeight: "180px", borderRadius: "12px", objectFit: "cover", width: "100%", objectPosition: "center top" }}
             />
           </Box>
         </Flex>
 
 
         {/* show booking table for today */}
-        <Box>
-          <Flex my={5} justifyContent="space-between" alignItems="center">
+        <Box my={10} >
+          <Flex my={5} justifyContent="space-between" alignItems="center" alignContent={"center"}>
             <Text>Today's Bookings: {bookings.length}</Text>
-            <Text>Tables: {tables.length}</Text>
-            <Link color="teal.500" fontWeight="semibold" to="/bookings/new">
-              <Button colorScheme="teal" size="sm">
-                New Booking
-              </Button>
-            </Link>
+
+            <Box>
+              <Flex justifyContent="flex-end" alignItems="center" gap={3}>
+                <Text>
+                  Select Date:
+                </Text>
+                <Input
+                  name='date'
+                  type="date"
+                  bg="white"
+                  width={"200px"}
+                  value={format(dateSelected, "yyyy-MM-dd")}
+                  onChange={(e) => setDateSelected(new Date(e.target.value))}
+                />
+                <Link color="teal.500" fontWeight="semibold" to="/bookings/new">
+                  <Button colorScheme="teal" size="sm">
+                    New Booking
+                  </Button>
+                </Link>
+              </Flex>
+            </Box>
           </Flex>
 
-            <Box my={5} textAlign={"right"}>
-            <Input
-              name='date'
-              type="date"
-              bg="white"
-              width={"200px"}
-
-            />
-            </Box>
 
 
           <Table.Root colorScheme="teal" size="md" variant="outline" striped interactive stickyHeader showColumnBorder >
@@ -147,12 +165,12 @@ export default function RestaurantDetailPage() {
                 <Table.ColumnHeader>Time</Table.ColumnHeader>
                 {tables.map(table => (
                   <Table.ColumnHeader key={table.id} textAlign={"center"}>
-                      <Box>
-                        <big>Table {table.id}</big>
-                      </Box>
-                      <Box>
-                        <small>(Seats: {table.seats})</small>
-                      </Box>
+                    <Box>
+                      <big>Table {table.id}</big>
+                    </Box>
+                    <Box>
+                      <small>(Seats: {table.seats})</small>
+                    </Box>
                   </Table.ColumnHeader>
                 ))}
 
