@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import * as user_repository from '../models/user_repository';
 import { Tooltip } from "./ui/tooltip";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Header({ user }: { user: any }) {
 

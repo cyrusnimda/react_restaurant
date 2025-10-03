@@ -4,17 +4,21 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Heading,
-  Text
+  Text,
+  Input
 } from "@chakra-ui/react";
 
 import Header from "../components/header";
 import { useNavigate } from "react-router-dom";
 import { toaster } from "../components/ui/toaster"
-
+import DatePicker from "react-datepicker";
+import { BOOKING_HOURS } from '../models/reataurant_repository';
+import { format } from "date-fns";
 
 export default function RestaurantsPage() {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState(null);
 
 
   useEffect(() => {
@@ -35,13 +39,12 @@ export default function RestaurantsPage() {
       return;
     }
     const formData = new FormData(form);
-    const datetime = formData.get("datetime") as string;
     const people = formData.get("people") as string;
     const name = formData.get("name") as string;
 
     const params = {
       // format YYYY-mm-dd hh:mm
-      date: datetime.replace("T", " "),
+      date: format(selectedDate, "yyyy-MM-dd HH:mm"),
       persons: parseInt(people),
       name: name,
     };
@@ -53,7 +56,7 @@ export default function RestaurantsPage() {
       } else {
         console.error("Error creating booking:", response);
         toaster.create({
-                  title: "Error creating booking.",
+          title: "Error creating booking.",
           description: response.message || "Unknown error",
         });
       }
@@ -64,6 +67,14 @@ export default function RestaurantsPage() {
         description: error.message || "Unknown error",
       });
     }
+  };
+
+  const buildIncludeTimes = () => {
+    const today = new Date();
+    return BOOKING_HOURS.map((time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return new Date(today.setHours(hours, minutes, 0, 0));
+    });
   };
 
   return (
@@ -84,17 +95,14 @@ export default function RestaurantsPage() {
             <Text mb={1} fontWeight="semibold">
               Date and Time
             </Text>
-            <input
-              type="datetime-local"
-              name="datetime"
-              required
-
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #CBD5E0",
-              }}
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              showTimeSelect
+              includeTimes={buildIncludeTimes()}
+              dateFormat="dd/MM/yyyy HH:mm"
+              placeholderText="Select date and time"
+              customInput={<Input />} // Chakra input
             />
           </Box>
           <Box>

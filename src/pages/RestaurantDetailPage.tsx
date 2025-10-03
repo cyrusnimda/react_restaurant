@@ -15,6 +15,7 @@ import {
 import Header from "../components/header";
 import { Link, useParams } from 'react-router-dom';
 import { Tooltip } from '../components/ui/tooltip';
+import { BOOKING_HOURS } from '../models/reataurant_repository';
 
 export default function RestaurantDetailPage() {
   const [user, setUser] = useState<any>(null);
@@ -51,13 +52,6 @@ export default function RestaurantDetailPage() {
     };
     fetchTables();
   }, []);
-
-  const BOOKING_HOURS = [
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-    '19:00', '19:30', '20:00', '20:30', '21:00', '21:30',
-    '22:00'
-  ]
-
 
 
 
